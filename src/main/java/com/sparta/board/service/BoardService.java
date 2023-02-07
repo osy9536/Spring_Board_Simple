@@ -1,42 +1,43 @@
 package com.sparta.board.service;
 
 import com.sparta.board.dto.BoardCreateDto;
-import com.sparta.board.dto.BoardGetDto;
+import com.sparta.board.dto.BoardPWExceptDto;
 import com.sparta.board.entity.Board;
 import com.sparta.board.repository.BoardRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
 public class BoardService {
     private final BoardRepository boardRepository;
 
-    public Board createBoard(BoardCreateDto boardCreateDto) {
-        return boardRepository.save(new Board(boardCreateDto));
+    public BoardPWExceptDto createBoard(BoardCreateDto boardCreateDto) {
+        Board board = new Board(boardCreateDto);
+        boardRepository.save(board);
+        return new BoardPWExceptDto(board);
     }
 
-    public List<BoardGetDto> getBoard() {
+    public List<BoardPWExceptDto> getBoard() {
         List<Board> board = boardRepository.findAllByOrderByModifiedAtDesc();
-        List<BoardGetDto> boardGetDto = new ArrayList<>();
+        List<BoardPWExceptDto> boardPWExceptDtos = new ArrayList<>();
         for (Board b : board) {
-            boardGetDto.add(new BoardGetDto(b));
+            boardPWExceptDtos.add(new BoardPWExceptDto(b));
         }
-        return boardGetDto;
+        return boardPWExceptDtos;
     }
 
 
-    public BoardGetDto getIdBoard(Long id) {
+    public BoardPWExceptDto getIdBoard(Long id) {
         Board board = boardRepository.findById(id).orElseThrow(
                 () -> new IllegalArgumentException("아이디가 존재하지 않습니다.")
         );
-        return new BoardGetDto(board);
+        return new BoardPWExceptDto(board);
     }
 
-    public Board update(Long id,BoardCreateDto boardCreateDto) {
+    public BoardPWExceptDto update(Long id, BoardCreateDto boardCreateDto) {
         Board board = boardRepository.findById(id).orElseThrow(
                 () -> new IllegalArgumentException("아이디가 존재하지 않습니다.")
         );
@@ -45,11 +46,18 @@ public class BoardService {
             boardRepository.save(board);
         } else throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
 
-        return board;
+        return new BoardPWExceptDto(board);
     }
 
-    public Long deleteBoard(Long id) {
-        boardRepository.deleteById(id);
-        return id;
+    public Map<String ,Boolean> deleteBoard(Long id, String pw) {
+        Board board = boardRepository.findById(id).orElseThrow(
+                () -> new IllegalArgumentException("아이디가 존재하지 않습니다.")
+        );
+        Map<String, Boolean> map = new HashMap<>();
+        if (board.getPassword().equals(pw)) {
+            boardRepository.deleteById(id);
+            map.put("success", true);
+        } else throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
+        return map;
     }
 }
