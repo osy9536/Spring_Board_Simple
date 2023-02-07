@@ -7,7 +7,7 @@
 ### API 명세서
 ------
 |Method|URL|Request|Response|
-|---|---|---|---|
+|:---:|:---:|:---:|:---:|
 |GET|/api/board||[
 {
 "createdAt": "2023-02-07T11:14:50.850221",
@@ -70,4 +70,4 @@
 }|
 |DELETE|/api/board/{id}/{password}||{
     "success": true
-|
+}|
